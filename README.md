@@ -1,15 +1,15 @@
-# 商城后台管理API - RBAC权限管理系统
+# 商城后台管理 API - RBAC 权限管理系统
 
-基于 Koa2 + MySQL 的商城后台管理API系统，实现完整的RBAC（基于角色的访问控制）权限管理功能。
+基于 Koa2 + MySQL 的商城后台管理 API 系统，实现完整的 RBAC（基于角色的访问控制）权限管理功能。
 
 ## 📋 功能特性
 
-- **完整的RBAC权限管理** - 用户、角色、权限三层管理体系
-- **JWT身份认证** - 安全的用户认证和授权机制
-- **RESTful API设计** - 标准的REST API接口规范
-- **参数验证** - 使用Joi进行严格的参数校验
-- **统一响应格式** - 标准化的API响应结构
-- **数据库连接池** - MySQL连接池优化性能
+- **完整的 RBAC 权限管理** - 用户、角色、权限三层管理体系
+- **JWT 身份认证** - 安全的用户认证和授权机制
+- **RESTful API 设计** - 标准的 REST API 接口规范
+- **参数验证** - 使用 Joi 进行严格的参数校验
+- **统一响应格式** - 标准化的 API 响应结构
+- **数据库连接池** - MySQL 连接池优化性能
 - **中间件架构** - 灵活的认证和权限验证中间件
 - **错误处理** - 完善的全局错误处理机制
 
@@ -64,7 +64,7 @@ cp .env.example .env
 
 ### 3. 创建数据库
 
-创建数据库并执行 `database/schema.sql` 中的SQL语句：
+创建数据库并执行 `database/schema.sql` 中的 SQL 语句：
 
 ```sql
 CREATE DATABASE mall_admin CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -86,9 +86,9 @@ npm start
 
 ## 🔐 权限管理
 
-### RBAC模型说明
+### RBAC 模型说明
 
-系统采用标准的RBAC（Role-Based Access Control）模型：
+系统采用标准的 RBAC（Role-Based Access Control）模型：
 
 - **用户（User）** - 系统的使用者
 - **角色（Role）** - 权限的集合，可分配给用户
@@ -98,14 +98,14 @@ npm start
 
 - **menu** - 菜单权限（页面访问权限）
 - **button** - 按钮权限（页面内操作权限）
-- **api** - 接口权限（API调用权限）
+- **api** - 接口权限（API 调用权限）
 
 ### 默认账号
 
 - 用户名：`admin`
 - 密码：`password`（实际为哈希值）
 
-## 📝 API接口
+## 📝 API 接口
 
 ### 认证相关
 
@@ -178,14 +178,14 @@ curl -X POST http://localhost:3000/api/users \
 
 ## 🛠️ 技术栈
 
-- **Node.js** - JavaScript运行环境
-- **Koa2** - Web应用框架
+- **Node.js** - JavaScript 运行环境
+- **Koa2** - Web 应用框架
 - **MySQL** - 关系型数据库
-- **mysql2** - MySQL数据库驱动
-- **jsonwebtoken** - JWT令牌处理
+- **mysql2** - MySQL 数据库驱动
+- **jsonwebtoken** - JWT 令牌处理
 - **bcryptjs** - 密码加密
 - **joi** - 参数验证库
-- **koa-router** - 路由中间件
+- **@koa/router** - 路由中间件
 - **koa-bodyparser** - 请求体解析
 - **koa-cors** - 跨域处理
 

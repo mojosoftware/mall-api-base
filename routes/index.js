@@ -1,8 +1,8 @@
-const Router = require('koa-router');
-const authRoutes = require('./auth');
-const userRoutes = require('./users');
-const roleRoutes = require('./roles');
-const permissionRoutes = require('./permissions');
+const Router = require("@koa/router");
+const authRoutes = require("./auth");
+const userRoutes = require("./users");
+const roleRoutes = require("./roles");
+const permissionRoutes = require("./permissions");
 
 const router = new Router();
 
@@ -13,14 +13,14 @@ router.use(roleRoutes.routes(), roleRoutes.allowedMethods());
 router.use(permissionRoutes.routes(), permissionRoutes.allowedMethods());
 
 // 健康检查接口
-router.get('/api/health', async (ctx) => {
+router.get("/api/health", async (ctx) => {
   ctx.body = {
     code: 0,
-    message: '服务正常',
+    message: "服务正常",
     data: {
-      status: 'ok',
-      timestamp: new Date().toISOString()
-    }
+      status: "ok",
+      timestamp: new Date().toISOString(),
+    },
   };
 });
 

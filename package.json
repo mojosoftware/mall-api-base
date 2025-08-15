@@ -8,20 +8,26 @@
     "dev": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["koa2", "mysql", "rbac", "admin", "api"],
+  "keywords": [
+    "koa2",
+    "mysql",
+    "rbac",
+    "admin",
+    "api"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@koa/router": "^14.0.0",
+    "bcryptjs": "^2.4.3",
+    "joi": "^17.11.0",
+    "jsonwebtoken": "^9.0.2",
     "koa": "^2.14.2",
-    "koa-router": "^12.0.1",
     "koa-bodyparser": "^4.4.1",
     "koa-cors": "^0.0.16",
     "koa-json": "^2.0.2",
     "koa-logger": "^3.2.1",
-    "mysql2": "^3.6.3",
-    "jsonwebtoken": "^9.0.2",
-    "bcryptjs": "^2.4.3",
-    "joi": "^17.11.0"
+    "mysql2": "^3.6.3"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
