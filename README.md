@@ -12,6 +12,8 @@
 - **数据库连接池** - MySQL 连接池优化性能
 - **中间件架构** - 灵活的认证和权限验证中间件
 - **错误处理** - 完善的全局错误处理机制
+- **限流保护** - 基于Redis的多种限流算法实现
+- **缓存支持** - 使用Redis进行数据缓存和会话管理
 
 ## 🏗️ 系统架构
 
@@ -19,6 +21,7 @@
 app.js                    # 应用入口文件
 ├── config/               # 配置文件
 │   ├── database.js       # 数据库配置
+│   ├── redis.js         # Redis配置
 │   └── jwt.js           # JWT配置
 ├── services/             # 业务逻辑层
 │   ├── AuthService.js    # 认证业务逻辑
@@ -33,6 +36,7 @@ app.js                    # 应用入口文件
 ├── middleware/           # 中间件
 │   ├── auth.js          # 认证中间件
 │   ├── permission.js    # 权限验证中间件
+│   ├── rateLimiter.js   # 限流中间件
 │   └── errorHandler.js  # 错误处理中间件
 ├── repositories/         # 数据访问层
 │   ├── UserRepository.js # 用户数据访问
@@ -65,6 +69,14 @@ npm install
 
 ```bash
 cp .env.example .env
+```
+
+配置Redis连接信息：
+```env
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+REDIS_DB=0
 ```
 
 ### 3. 创建数据库
@@ -193,6 +205,45 @@ curl -X POST http://localhost:3000/api/users \
 - **@koa/router** - 路由中间件
 - **koa-bodyparser** - 请求体解析
 - **koa-cors** - 跨域处理
+- **ioredis** - Redis客户端
+
+## 🛡️ 限流保护
+
+系统实现了多层限流保护：
+
+### **限流算法**
+- **固定窗口** - 简单高效，适用于一般场景
+- **滑动窗口** - 更平滑的限流，适用于严格控制
+- **令牌桶** - 允许突发流量，适用于弹性场景
+
+### **限流策略**
+- **全局限流** - 宽松限流，防止系统过载
+- **接口限流** - 中等限流，保护API接口
+- **敏感操作限流** - 严格限流，保护登录等敏感接口
+
+### **限流配置**
+```javascript
+// 严格限流 - 登录接口
+{
+  windowMs: 15 * 60 * 1000, // 15分钟
+  max: 5, // 最多5次
+  algorithm: 'sliding_window'
+}
+
+// 中等限流 - API接口  
+{
+  windowMs: 60 * 1000, // 1分钟
+  max: 60, // 最多60次
+  algorithm: 'fixed_window'
+}
+
+// 宽松限流 - 全局保护
+{
+  windowMs: 60 * 1000, // 1分钟
+  max: 100, // 桶容量100
+  algorithm: 'token_bucket'
+}
+```
 
 ## 📄 许可证
 

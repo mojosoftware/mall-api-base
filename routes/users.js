@@ -2,6 +2,7 @@ const Router = require('@koa/router');
 const userController = require('../controllers/UserController');
 const { authenticate } = require('../middleware/auth');
 const { requirePermission } = require('../middleware/permission');
+const { createUserRateLimiter, rateLimitConfigs } = require('../middleware/rateLimiter');
 const {
   validateSchema,
   userSchemas,
@@ -12,6 +13,9 @@ const router = new Router({ prefix: '/api/users' });
 
 // 需要鉴权登录接口
 router.use(authenticate);
+
+// 应用中等限流到所有用户接口
+router.use(createUserRateLimiter(rateLimitConfigs.moderate));
 
 // 获取用户列表
 router.get(
@@ -65,6 +69,7 @@ router.post(
 // 重置用户密码
 router.post(
   '/:id/reset-password',
+  createUserRateLimiter(rateLimitConfigs.strict),
   requirePermission('user:update'),
   validateSchema(commonSchemas.id, 'params'),
   userController.resetPassword

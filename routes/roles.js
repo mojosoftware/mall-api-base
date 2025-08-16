@@ -2,6 +2,7 @@ const Router = require('@koa/router');
 const roleController = require('../controllers/RoleController');
 const { authenticate } = require('../middleware/auth');
 const { requirePermission } = require('../middleware/permission');
+const { createUserRateLimiter, rateLimitConfigs } = require('../middleware/rateLimiter');
 const {
   validateSchema,
   roleSchemas,
@@ -12,6 +13,9 @@ const router = new Router({ prefix: '/api/roles' });
 
 // 需要鉴权登录接口
 router.use(authenticate);
+
+// 应用中等限流到所有角色接口
+router.use(createUserRateLimiter(rateLimitConfigs.moderate));
 
 // 获取角色列表
 router.get('/', requirePermission('role:list'), roleController.getRoles);

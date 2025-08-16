@@ -2,6 +2,7 @@ const Router = require('@koa/router');
 const permissionController = require('../controllers/PermissionController');
 const { authenticate } = require('../middleware/auth');
 const { requirePermission } = require('../middleware/permission');
+const { createUserRateLimiter, rateLimitConfigs } = require('../middleware/rateLimiter');
 const {
   validateSchema,
   permissionSchemas,
@@ -12,6 +13,9 @@ const router = new Router({ prefix: '/api/permissions' });
 
 // 需要鉴权登录接口
 router.use(authenticate);
+
+// 应用中等限流到所有权限接口
+router.use(createUserRateLimiter(rateLimitConfigs.moderate));
 
 // 获取权限列表
 router.get(

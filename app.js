@@ -7,6 +7,7 @@ const logger = require('./utils/logger');
 const { sequelize } = require('./models');
 const routes = require('./routes');
 const errorHandler = require('./middleware/errorHandler');
+const { createRateLimiter, rateLimitConfigs } = require('./middleware/rateLimiter');
 const Response = require('./utils/response');
 
 const app = new Koa();
@@ -25,6 +26,9 @@ app.use(
     allowHeaders: ['Content-Type', 'Authorization']
   })
 );
+
+// 全局限流 - 宽松限流
+app.use(createRateLimiter(rateLimitConfigs.loose));
 
 app.use(json({ pretty: false, param: 'pretty' }));
 
