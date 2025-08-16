@@ -233,6 +233,12 @@ curl -X POST http://localhost:3000/api/users \
 - **koa-bodyparser** - 请求体解析
 - **koa-cors** - 跨域处理
 - **ioredis** - Redis客户端
+- **xlsx** - Excel文件处理
+- **pdfkit** - PDF生成
+- **sharp** - 图片处理
+- **qrcode** - 二维码生成
+- **bull** - 消息队列
+- **stripe** - 支付处理
 
 ## 🛡️ 限流保护
 
