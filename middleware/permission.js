@@ -1,4 +1,4 @@
-const UserRepository = require('../repositories/UserRepository');
+const userRepository = require('../repositories/UserRepository');
 const Response = require('../utils/response');
 const logger = require('../utils/logger');
 
@@ -22,7 +22,6 @@ function requirePermission(requiredPermissions) {
         : [requiredPermissions];
 
       // 获取用户权限
-      const userRepository = new UserRepository();
       const userPermissions = await userRepository.getUserPermissions(userId);
 
       // 提取权限代码数组
@@ -56,7 +55,6 @@ async function requireSuperAdmin(ctx, next) {
       return Response.error(ctx, '用户未认证', -1, 401);
     }
 
-    const userRepository = new UserRepository();
     const userRoles = await userRepository.getUserRoles(userId);
 
     const isSuperAdmin = userRoles.some((role) => role.code === 'super_admin');
@@ -90,7 +88,6 @@ function requireRole(requiredRoles) {
         ? requiredRoles
         : [requiredRoles];
 
-      const userRepository = new UserRepository();
       const userRoles = await userRepository.getUserRoles(userId);
 
       const userRoleCodes = userRoles.map((r) => r.code);

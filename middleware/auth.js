@@ -1,6 +1,6 @@
 const { verifyToken } = require('../config/jwt');
 const logger = require('../utils/logger');
-const UserRepository = require('../repositories/UserRepository');
+const userRepository = require('../repositories/UserRepository');
 const Response = require('../utils/response');
 
 /**
@@ -37,7 +37,6 @@ async function authenticate(ctx, next) {
       return;
     }
 
-    const userRepository = new UserRepository();
     const user = await userRepository.findById(decoded.id);
 
     if (!user || user.status === 0) {

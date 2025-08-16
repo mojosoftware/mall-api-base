@@ -1,12 +1,8 @@
-const RoleService = require('../services/RoleService');
+const roleService = require('../services/RoleService');
 const Response = require('../utils/response');
 const logger = require('../utils/logger');
 
 class RoleController {
-  constructor() {
-    this.roleService = new RoleService();
-  }
-
   /**
    * 获取角色列表
    * @param {Object} ctx - Koa上下文
@@ -20,7 +16,7 @@ class RoleController {
       if (code) filters.code = code;
       if (status !== undefined) filters.status = parseInt(status);
 
-      const result = await this.roleService.getRoles(
+      const result = await roleService.getRoles(
         page ? parseInt(page) : null,
         pageSize ? parseInt(pageSize) : null,
         filters
@@ -44,7 +40,7 @@ class RoleController {
   async getRoleById(ctx) {
     try {
       const { id } = ctx.params;
-      const result = await this.roleService.getRoleById(id);
+      const result = await roleService.getRoleById(id);
       Response.success(ctx, result, '获取角色详情成功');
     } catch (error) {
       logger.error('获取角色详情失败:', error);
@@ -59,7 +55,7 @@ class RoleController {
   async createRole(ctx) {
     try {
       const roleData = ctx.request.body;
-      const role = await this.roleService.createRole(roleData);
+      const role = await roleService.createRole(roleData);
       Response.success(ctx, role, '创建角色成功');
     } catch (error) {
       logger.error('创建角色失败:', error);
@@ -75,7 +71,7 @@ class RoleController {
     try {
       const { id } = ctx.params;
       const updateData = ctx.request.body;
-      const role = await this.roleService.updateRole(id, updateData);
+      const role = await roleService.updateRole(id, updateData);
       Response.success(ctx, role, '更新角色成功');
     } catch (error) {
       logger.error('更新角色失败:', error);
@@ -91,7 +87,7 @@ class RoleController {
     try {
       const { id } = ctx.params;
       
-      await this.roleService.deleteRole(id);
+      await roleService.deleteRole(id);
       Response.success(ctx, null, '删除角色成功');
     } catch (error) {
       logger.error('删除角色失败:', error);
@@ -108,7 +104,7 @@ class RoleController {
       const { id } = ctx.params;
       const { permission_ids } = ctx.request.body;
       
-      await this.roleService.assignPermissions(id, permission_ids);
+      await roleService.assignPermissions(id, permission_ids);
       Response.success(ctx, null, '分配权限成功');
     } catch (error) {
       logger.error('分配权限失败:', error);
@@ -117,4 +113,5 @@ class RoleController {
   }
 }
 
-module.exports = RoleController;
+// 导出实例
+module.exports = new RoleController();

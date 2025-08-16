@@ -1,5 +1,5 @@
 const Router = require('@koa/router');
-const UserController = require('../controllers/UserController');
+const userController = require('../controllers/UserController');
 const { authenticate } = require('../middleware/auth');
 const { requirePermission } = require('../middleware/permission');
 const {
@@ -9,7 +9,6 @@ const {
 } = require('../utils/validator');
 
 const router = new Router({ prefix: '/api/users' });
-const userController = new UserController();
 
 // 需要鉴权登录接口
 router.use(authenticate);

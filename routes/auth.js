@@ -1,10 +1,9 @@
 const Router = require('@koa/router');
-const AuthController = require('../controllers/AuthController');
+const authController = require('../controllers/AuthController');
 const { authenticate } = require('../middleware/auth');
 const { validateSchema, userSchemas } = require('../utils/validator');
 
 const router = new Router({ prefix: '/api/auth' });
-const authController = new AuthController();
 
 // 用户登录
 router.post('/login', validateSchema(userSchemas.login), authController.login);

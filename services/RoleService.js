@@ -1,12 +1,7 @@
-const RoleRepository = require('../repositories/RoleRepository');
-const PermissionRepository = require('../repositories/PermissionRepository');
+const roleRepository = require('../repositories/RoleRepository');
+const permissionRepository = require('../repositories/PermissionRepository');
 
 class RoleService {
-  constructor() {
-    this.roleRepository = new RoleRepository();
-    this.permissionRepository = new PermissionRepository();
-  }
-
   /**
    * 获取角色列表
    * @param {Number} page - 页码
@@ -16,9 +11,9 @@ class RoleService {
    */
   async getRoles(page, pageSize, filters) {
     if (page && pageSize) {
-      return await this.roleRepository.findPaginated(page, pageSize, filters);
+      return await roleRepository.findRolesPaginated(page, pageSize, filters);
     } else {
-      const roles = await this.roleRepository.findAllEnabled();
+      const roles = await roleRepository.findAllEnabled();
       return { list: roles, total: roles.length };
     }
   }
@@ -29,13 +24,13 @@ class RoleService {
    * @returns {Object} 角色详情
    */
   async getRoleById(id) {
-    const role = await this.roleRepository.findById(id);
+    const role = await roleRepository.findById(id);
     if (!role) {
       throw new Error('角色不存在');
     }
 
     // 获取角色权限
-    const permissions = await this.roleRepository.getRolePermissions(id);
+    const permissions = await roleRepository.getRolePermissions(id);
 
     return { role, permissions };
   }
@@ -47,12 +42,12 @@ class RoleService {
    */
   async createRole(roleData) {
     // 检查角色代码是否已存在
-    const existingRole = await this.roleRepository.findByCode(roleData.code);
+    const existingRole = await roleRepository.findByCode(roleData.code);
     if (existingRole) {
       throw new Error('角色代码已存在');
     }
 
-    return await this.roleRepository.create(roleData);
+    return await roleRepository.create(roleData);
   }
 
   /**
@@ -63,12 +58,20 @@ class RoleService {
    */
   async updateRole(id, updateData) {
     // 检查角色是否存在
-    const existingRole = await this.roleRepository.findById(id);
+    const existingRole = await roleRepository.findById(id);
     if (!existingRole) {
       throw new Error('角色不存在');
     }
 
-    return await this.roleRepository.update(id, updateData);
+    // 如果更新代码，检查是否已存在
+    if (updateData.code && updateData.code !== existingRole.code) {
+      const isCodeExists = await roleRepository.isCodeExists(updateData.code, id);
+      if (isCodeExists) {
+        throw new Error('角色代码已存在');
+      }
+    }
+
+    return await roleRepository.updateById(id, updateData);
   }
 
   /**
@@ -78,23 +81,19 @@ class RoleService {
    */
   async deleteRole(id) {
     // 检查角色是否存在
-    const existingRole = await this.roleRepository.findById(id);
+    const existingRole = await roleRepository.findById(id);
     if (!existingRole) {
       throw new Error('角色不存在');
     }
 
     // 检查是否有用户使用该角色
-    const userCount = await this.roleRepository.getUserCount(id);
+    const userCount = await roleRepository.getUserCount(id);
     if (userCount > 0) {
       throw new Error('该角色下还有用户，无法删除');
     }
 
-    const result = await this.roleRepository.delete(id);
-    if (!result) {
-      throw new Error('删除角色失败');
-    }
-
-    return result;
+    const result = await roleRepository.destroyById(id);
+    return result > 0;
   }
 
   /**
@@ -104,21 +103,22 @@ class RoleService {
    */
   async assignPermissions(id, permissionIds) {
     // 检查角色是否存在
-    const existingRole = await this.roleRepository.findById(id);
+    const existingRole = await roleRepository.findById(id);
     if (!existingRole) {
       throw new Error('角色不存在');
     }
 
     // 验证权限是否都存在
     for (const permissionId of permissionIds) {
-      const permission = await this.permissionRepository.findById(permissionId);
+      const permission = await permissionRepository.findById(permissionId);
       if (!permission) {
         throw new Error(`权限ID ${permissionId} 不存在`);
       }
     }
 
-    await this.roleRepository.assignPermissions(id, permissionIds);
+    await roleRepository.assignPermissions(id, permissionIds);
   }
 }
 
-module.exports = RoleService;
+// 导出实例
+module.exports = new RoleService();

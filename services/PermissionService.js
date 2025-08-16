@@ -1,10 +1,6 @@
-const PermissionRepository = require('../repositories/PermissionRepository');
+const permissionRepository = require('../repositories/PermissionRepository');
 
 class PermissionService {
-  constructor() {
-    this.permissionRepository = new PermissionRepository();
-  }
-
   /**
    * 获取权限列表
    * @param {Number} page - 页码
@@ -14,9 +10,9 @@ class PermissionService {
    */
   async getPermissions(page, pageSize, filters) {
     if (page && pageSize) {
-      return await this.permissionRepository.findPaginated(page, pageSize, filters);
+      return await permissionRepository.findPermissionsPaginated(page, pageSize, filters);
     } else {
-      const permissions = await this.permissionRepository.findAllEnabled();
+      const permissions = await permissionRepository.findAllEnabled();
       return { list: permissions, total: permissions.length };
     }
   }
@@ -26,7 +22,7 @@ class PermissionService {
    * @returns {Array} 权限树
    */
   async getPermissionTree() {
-    return await this.permissionRepository.getPermissionTree();
+    return await permissionRepository.getPermissionTree();
   }
 
   /**
@@ -35,7 +31,7 @@ class PermissionService {
    * @returns {Object} 权限详情
    */
   async getPermissionById(id) {
-    const permission = await this.permissionRepository.findById(id);
+    const permission = await permissionRepository.findById(id);
     if (!permission) {
       throw new Error('权限不存在');
     }
@@ -50,7 +46,7 @@ class PermissionService {
    */
   async createPermission(permissionData) {
     // 检查权限代码是否已存在
-    const existingPermission = await this.permissionRepository.findByCode(
+    const existingPermission = await permissionRepository.findByCode(
       permissionData.code
     );
     if (existingPermission) {
@@ -59,7 +55,7 @@ class PermissionService {
 
     // 如果设置了父权限，检查父权限是否存在
     if (permissionData.parent_id && permissionData.parent_id > 0) {
-      const parentPermission = await this.permissionRepository.findById(
+      const parentPermission = await permissionRepository.findById(
         permissionData.parent_id
       );
       if (!parentPermission) {
@@ -67,7 +63,7 @@ class PermissionService {
       }
     }
 
-    return await this.permissionRepository.create(permissionData);
+    return await permissionRepository.create(permissionData);
   }
 
   /**
@@ -78,9 +74,17 @@ class PermissionService {
    */
   async updatePermission(id, updateData) {
     // 检查权限是否存在
-    const existingPermission = await this.permissionRepository.findById(id);
+    const existingPermission = await permissionRepository.findById(id);
     if (!existingPermission) {
       throw new Error('权限不存在');
+    }
+
+    // 如果更新代码，检查是否已存在
+    if (updateData.code && updateData.code !== existingPermission.code) {
+      const isCodeExists = await permissionRepository.isCodeExists(updateData.code, id);
+      if (isCodeExists) {
+        throw new Error('权限代码已存在');
+      }
     }
 
     // 如果更新父权限，检查父权限是否存在且不能设置为自己
@@ -89,7 +93,7 @@ class PermissionService {
         if (updateData.parent_id === parseInt(id)) {
           throw new Error('不能将自己设置为父权限');
         }
-        const parentPermission = await this.permissionRepository.findById(
+        const parentPermission = await permissionRepository.findById(
           updateData.parent_id
         );
         if (!parentPermission) {
@@ -98,7 +102,7 @@ class PermissionService {
       }
     }
 
-    return await this.permissionRepository.update(id, updateData);
+    return await permissionRepository.updateById(id, updateData);
   }
 
   /**
@@ -108,24 +112,21 @@ class PermissionService {
    */
   async deletePermission(id) {
     // 检查权限是否存在
-    const existingPermission = await this.permissionRepository.findById(id);
+    const existingPermission = await permissionRepository.findById(id);
     if (!existingPermission) {
       throw new Error('权限不存在');
     }
 
     // 检查是否有子权限
-    const childrenCount = await this.permissionRepository.getChildrenCount(id);
+    const childrenCount = await permissionRepository.getChildrenCount(id);
     if (childrenCount > 0) {
       throw new Error('该权限下还有子权限，无法删除');
     }
 
-    const result = await this.permissionRepository.delete(id);
-    if (!result) {
-      throw new Error('删除权限失败');
-    }
-
-    return result;
+    const result = await permissionRepository.destroyById(id);
+    return result > 0;
   }
 }
 
-module.exports = PermissionService;
+// 导出实例
+module.exports = new PermissionService();

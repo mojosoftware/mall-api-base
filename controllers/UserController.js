@@ -1,12 +1,8 @@
-const UserService = require('../services/UserService');
+const userService = require('../services/UserService');
 const Response = require('../utils/response');
 const logger = require('../utils/logger');
 
 class UserController {
-  constructor() {
-    this.userService = new UserService();
-  }
-
   /**
    * 获取用户列表
    * @param {Object} ctx - Koa上下文
@@ -26,7 +22,7 @@ class UserController {
       if (email) filters.email = email;
       if (status !== undefined) filters.status = parseInt(status);
 
-      const result = await this.userService.getUsers(
+      const result = await userService.getUsers(
         parseInt(page),
         parseInt(pageSize),
         filters
@@ -53,7 +49,7 @@ class UserController {
   async getUserById(ctx) {
     try {
       const { id } = ctx.params;
-      const result = await this.userService.getUserById(id);
+      const result = await userService.getUserById(id);
       Response.success(ctx, result, '获取用户详情成功');
     } catch (error) {
       logger.error('获取用户详情失败:', error);
@@ -68,7 +64,7 @@ class UserController {
   async createUser(ctx) {
     try {
       const userData = ctx.request.body;
-      const user = await this.userService.createUser(userData);
+      const user = await userService.createUser(userData);
       Response.success(ctx, user, '创建用户成功');
     } catch (error) {
       logger.error('创建用户失败:', error);
@@ -84,7 +80,7 @@ class UserController {
     try {
       const { id } = ctx.params;
       const updateData = ctx.request.body;
-      const user = await this.userService.updateUser(id, updateData);
+      const user = await userService.updateUser(id, updateData);
       Response.success(ctx, user, '更新用户成功');
     } catch (error) {
       logger.error('更新用户失败:', error);
@@ -101,7 +97,7 @@ class UserController {
       const { id } = ctx.params;
       const currentUserId = ctx.state.userId;
       
-      await this.userService.deleteUser(id, currentUserId);
+      await userService.deleteUser(id, currentUserId);
       Response.success(ctx, null, '删除用户成功');
     } catch (error) {
       logger.error('删除用户失败:', error);
@@ -118,7 +114,7 @@ class UserController {
       const { id } = ctx.params;
       const { role_ids } = ctx.request.body;
       
-      await this.userService.assignRoles(id, role_ids);
+      await userService.assignRoles(id, role_ids);
       Response.success(ctx, null, '分配角色成功');
     } catch (error) {
       logger.error('分配角色失败:', error);
@@ -135,7 +131,7 @@ class UserController {
       const { id } = ctx.params;
       const { new_password } = ctx.request.body;
       
-      await this.userService.resetPassword(id, new_password);
+      await userService.resetPassword(id, new_password);
       Response.success(ctx, null, '重置密码成功');
     } catch (error) {
       logger.error('重置密码失败:', error);
@@ -144,4 +140,5 @@ class UserController {
   }
 }
 
-module.exports = UserController;
+// 导出实例
+module.exports = new UserController();

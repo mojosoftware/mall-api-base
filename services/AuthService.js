@@ -1,13 +1,9 @@
 const { generateToken } = require('../config/jwt');
 const logger = require('../utils/logger');
-const UserRepository = require('../repositories/UserRepository');
+const userRepository = require('../repositories/UserRepository');
 const bcrypt = require('bcryptjs');
 
 class AuthService {
-  constructor() {
-    this.userRepository = new UserRepository();
-  }
-
   /**
    * 用户登录
    * @param {String} email - 邮箱
@@ -17,7 +13,7 @@ class AuthService {
    */
   async login(email, password, clientIp) {
     // 查找用户
-    const user = await this.userRepository.findByEmail(email);
+    const user = await userRepository.findByEmail(email);
     if (!user) {
       throw new Error('用户名或密码错误');
     }
@@ -28,7 +24,7 @@ class AuthService {
     }
 
     // 验证密码
-    const isValidPassword = await this.userRepository.verifyPassword(
+    const isValidPassword = await userRepository.verifyPassword(
       password,
       user.password
     );
@@ -37,7 +33,7 @@ class AuthService {
     }
 
     // 更新最后登录时间和IP
-    await this.userRepository.updateLastLogin(user.id, clientIp);
+    await userRepository.updateLastLogin(user.id, clientIp);
 
     // 生成JWT令牌
     const token = generateToken({
@@ -47,14 +43,14 @@ class AuthService {
     });
 
     // 获取用户角色和权限
-    const roles = await this.userRepository.getUserRoles(user.id);
-    const permissions = await this.userRepository.getUserPermissions(user.id);
+    const roles = await userRepository.getUserRoles(user.id);
+    const permissions = await userRepository.getUserPermissions(user.id);
 
-    // 移除密码字段
-    delete user.password;
+    // 获取用户信息（不包含密码）
+    const userInfo = await userRepository.findUserById(user.id);
 
     return {
-      user,
+      user: userInfo,
       token,
       roles,
       permissions
@@ -67,14 +63,14 @@ class AuthService {
    * @returns {Object} 用户信息
    */
   async getCurrentUser(userId) {
-    const user = await this.userRepository.findById(userId);
+    const user = await userRepository.findUserById(userId);
     if (!user) {
       throw new Error('用户不存在');
     }
 
     // 获取用户角色和权限
-    const roles = await this.userRepository.getUserRoles(userId);
-    const permissions = await this.userRepository.getUserPermissions(userId);
+    const roles = await userRepository.getUserRoles(userId);
+    const permissions = await userRepository.getUserPermissions(userId);
 
     return {
       user,
@@ -90,14 +86,14 @@ class AuthService {
    * @param {String} newPassword - 新密码
    */
   async changePassword(userId, oldPassword, newPassword) {
-    // 获取用户信息
-    const user = await this.userRepository.findById(userId);
+    // 获取用户信息（包含密码）
+    const user = await userRepository.findById(userId);
     if (!user) {
       throw new Error('用户不存在');
     }
 
     // 验证旧密码
-    const isValidOldPassword = await this.userRepository.verifyPassword(
+    const isValidOldPassword = await userRepository.verifyPassword(
       oldPassword,
       user.password
     );
@@ -106,11 +102,9 @@ class AuthService {
     }
 
     // 更新密码
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-    await this.userRepository.update(userId, {
-      password: hashedNewPassword
-    });
+    await userRepository.updatePassword(userId, newPassword);
   }
 }
 
-module.exports = AuthService;
+// 导出实例
+module.exports = new AuthService();

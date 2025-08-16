@@ -1,12 +1,8 @@
 const logger = require('../utils/logger');
-const AuthService = require('../services/AuthService');
+const authService = require('../services/AuthService');
 const Response = require('../utils/response');
 
 class AuthController {
-  constructor() {
-    this.authService = new AuthService();
-  }
-
   /**
    * 用户登录
    * @param {Object} ctx - Koa上下文
@@ -19,7 +15,7 @@ class AuthController {
         ctx.request.header['x-forwarded-for'] ||
         ctx.request.socket.remoteAddress;
 
-      const result = await this.authService.login(email, password, clientIp);
+      const result = await authService.login(email, password, clientIp);
       Response.success(ctx, result, '登录成功');
     } catch (error) {
       logger.error('登录失败:', error);
@@ -34,7 +30,7 @@ class AuthController {
   async getCurrentUser(ctx) {
     try {
       const userId = ctx.state.userId;
-      const result = await this.authService.getCurrentUser(userId);
+      const result = await authService.getCurrentUser(userId);
       Response.success(ctx, result, '获取用户信息成功');
     } catch (error) {
       logger.error('获取用户信息失败:', error);
@@ -51,7 +47,7 @@ class AuthController {
       const userId = ctx.state.userId;
       const { old_password, new_password } = ctx.request.body;
       
-      await this.authService.changePassword(userId, old_password, new_password);
+      await authService.changePassword(userId, old_password, new_password);
       Response.success(ctx, null, '密码修改成功');
     } catch (error) {
       logger.error('修改密码失败:', error);
@@ -74,4 +70,5 @@ class AuthController {
   }
 }
 
-module.exports = AuthController;
+// 导出实例
+module.exports = new AuthController();

@@ -4,7 +4,7 @@ const cors = require('koa-cors');
 const json = require('koa-json');
 const helmet = require('koa-helmet');
 const logger = require('./utils/logger');
-const { promisePool } = require('./config/database');
+const { sequelize } = require('./models');
 const routes = require('./routes');
 const errorHandler = require('./middleware/errorHandler');
 const Response = require('./utils/response');
@@ -55,12 +55,17 @@ app.use(async (ctx) => {
 
 const PORT = process.env.PORT || 3000;
 
-// 启动前测试数据库连接
-promisePool
-  .getConnection()
-  .then((conn) => {
-    conn.release();
+// 启动前测试数据库连接和同步模型
+sequelize
+  .authenticate()
+  .then(() => {
     console.log('✅ 数据库连接成功');
+    // 同步模型（开发环境）
+    if (process.env.NODE_ENV === 'development') {
+      return sequelize.sync({ alter: false });
+    }
+  })
+  .then(() => {
     app.listen(PORT, () => {
       console.log(`🚀 服务器启动成功！`);
       console.log(`📍 服务地址: http://localhost:${PORT}`);

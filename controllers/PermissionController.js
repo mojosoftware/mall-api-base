@@ -1,12 +1,8 @@
-const PermissionService = require('../services/PermissionService');
+const permissionService = require('../services/PermissionService');
 const Response = require('../utils/response');
 const logger = require('../utils/logger');
 
 class PermissionController {
-  constructor() {
-    this.permissionService = new PermissionService();
-  }
-
   /**
    * 获取权限列表
    * @param {Object} ctx - Koa上下文
@@ -23,7 +19,7 @@ class PermissionController {
       if (parent_id !== undefined) filters.parent_id = parseInt(parent_id);
       if (status !== undefined) filters.status = parseInt(status);
 
-      const result = await this.permissionService.getPermissions(
+      const result = await permissionService.getPermissions(
         page ? parseInt(page) : null,
         pageSize ? parseInt(pageSize) : null,
         filters
@@ -46,7 +42,7 @@ class PermissionController {
    */
   async getPermissionTree(ctx) {
     try {
-      const tree = await this.permissionService.getPermissionTree();
+      const tree = await permissionService.getPermissionTree();
       Response.success(ctx, tree, '获取权限树成功');
     } catch (error) {
       logger.error('获取权限树失败:', error);
@@ -61,7 +57,7 @@ class PermissionController {
   async getPermissionById(ctx) {
     try {
       const { id } = ctx.params;
-      const permission = await this.permissionService.getPermissionById(id);
+      const permission = await permissionService.getPermissionById(id);
       Response.success(ctx, permission, '获取权限详情成功');
     } catch (error) {
       logger.error('获取权限详情失败:', error);
@@ -76,7 +72,7 @@ class PermissionController {
   async createPermission(ctx) {
     try {
       const permissionData = ctx.request.body;
-      const permission = await this.permissionService.createPermission(permissionData);
+      const permission = await permissionService.createPermission(permissionData);
       Response.success(ctx, permission, '创建权限成功');
     } catch (error) {
       logger.error('创建权限失败:', error);
@@ -92,7 +88,7 @@ class PermissionController {
     try {
       const { id } = ctx.params;
       const updateData = ctx.request.body;
-      const permission = await this.permissionService.updatePermission(id, updateData);
+      const permission = await permissionService.updatePermission(id, updateData);
       Response.success(ctx, permission, '更新权限成功');
     } catch (error) {
       logger.error('更新权限失败:', error);
@@ -108,7 +104,7 @@ class PermissionController {
     try {
       const { id } = ctx.params;
       
-      await this.permissionService.deletePermission(id);
+      await permissionService.deletePermission(id);
       Response.success(ctx, null, '删除权限成功');
     } catch (error) {
       logger.error('删除权限失败:', error);
@@ -117,4 +113,5 @@ class PermissionController {
   }
 }
 
-module.exports = PermissionController;
+// 导出实例
+module.exports = new PermissionController();

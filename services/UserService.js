@@ -1,13 +1,7 @@
-const UserRepository = require('../repositories/UserRepository');
-const RoleRepository = require('../repositories/RoleRepository');
-const bcrypt = require('bcryptjs');
+const userRepository = require('../repositories/UserRepository');
+const roleRepository = require('../repositories/RoleRepository');
 
 class UserService {
-  constructor() {
-    this.userRepository = new UserRepository();
-    this.roleRepository = new RoleRepository();
-  }
-
   /**
    * 获取用户列表
    * @param {Number} page - 页码
@@ -16,7 +10,7 @@ class UserService {
    * @returns {Object} 用户列表和总数
    */
   async getUsers(page, pageSize, filters) {
-    return await this.userRepository.findPaginated(page, pageSize, filters);
+    return await userRepository.findUsersPaginated(page, pageSize, filters);
   }
 
   /**
@@ -25,13 +19,13 @@ class UserService {
    * @returns {Object} 用户详情
    */
   async getUserById(id) {
-    const user = await this.userRepository.findById(id);
+    const user = await userRepository.findUserById(id);
     if (!user) {
       throw new Error('用户不存在');
     }
 
     // 获取用户角色
-    const roles = await this.userRepository.getUserRoles(id);
+    const roles = await userRepository.getUserRoles(id);
 
     return { user, roles };
   }
@@ -43,7 +37,7 @@ class UserService {
    */
   async createUser(userData) {
     // 检查用户名是否已存在
-    const existingUserByUsername = await this.userRepository.findByUsername(
+    const existingUserByUsername = await userRepository.findByUsername(
       userData.username
     );
     if (existingUserByUsername) {
@@ -51,14 +45,15 @@ class UserService {
     }
 
     // 检查邮箱是否已存在
-    const existingUserByEmail = await this.userRepository.findByEmail(
+    const existingUserByEmail = await userRepository.findByEmail(
       userData.email
     );
     if (existingUserByEmail) {
       throw new Error('邮箱已存在');
     }
 
-    return await this.userRepository.create(userData);
+    const user = await userRepository.createUser(userData);
+    return await userRepository.findUserById(user.id);
   }
 
   /**
@@ -69,14 +64,14 @@ class UserService {
    */
   async updateUser(id, updateData) {
     // 检查用户是否存在
-    const existingUser = await this.userRepository.findById(id);
+    const existingUser = await userRepository.findUserById(id);
     if (!existingUser) {
       throw new Error('用户不存在');
     }
 
     // 如果更新邮箱，检查是否已存在
     if (updateData.email && updateData.email !== existingUser.email) {
-      const existingUserByEmail = await this.userRepository.findByEmail(
+      const existingUserByEmail = await userRepository.findByEmail(
         updateData.email
       );
       if (existingUserByEmail) {
@@ -84,7 +79,8 @@ class UserService {
       }
     }
 
-    return await this.userRepository.update(id, updateData);
+    await userRepository.updateById(id, updateData);
+    return await userRepository.findUserById(id);
   }
 
   /**
@@ -100,17 +96,13 @@ class UserService {
     }
 
     // 检查用户是否存在
-    const existingUser = await this.userRepository.findById(id);
+    const existingUser = await userRepository.findUserById(id);
     if (!existingUser) {
       throw new Error('用户不存在');
     }
 
-    const result = await this.userRepository.delete(id);
-    if (!result) {
-      throw new Error('删除用户失败');
-    }
-
-    return result;
+    const result = await userRepository.destroyById(id);
+    return result > 0;
   }
 
   /**
@@ -120,20 +112,20 @@ class UserService {
    */
   async assignRoles(id, roleIds) {
     // 检查用户是否存在
-    const existingUser = await this.userRepository.findById(id);
+    const existingUser = await userRepository.findUserById(id);
     if (!existingUser) {
       throw new Error('用户不存在');
     }
 
     // 验证角色是否都存在
     for (const roleId of roleIds) {
-      const role = await this.roleRepository.findById(roleId);
+      const role = await roleRepository.findById(roleId);
       if (!role) {
         throw new Error(`角色ID ${roleId} 不存在`);
       }
     }
 
-    await this.userRepository.assignRoles(id, roleIds);
+    await userRepository.assignRoles(id, roleIds);
   }
 
   /**
@@ -143,17 +135,14 @@ class UserService {
    */
   async resetPassword(id, newPassword) {
     // 检查用户是否存在
-    const existingUser = await this.userRepository.findById(id);
+    const existingUser = await userRepository.findUserById(id);
     if (!existingUser) {
       throw new Error('用户不存在');
     }
 
-    // 更新密码
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await this.userRepository.update(id, {
-      password: hashedPassword
-    });
+    await userRepository.updatePassword(id, newPassword);
   }
 }
 
-module.exports = UserService;
+// 导出实例
+module.exports = new UserService();
