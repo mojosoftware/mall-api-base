@@ -1,6 +1,9 @@
 const { generateToken } = require('../config/jwt');
 const logger = require('../utils/logger');
 const userRepository = require('../repositories/UserRepository');
+const emailService = require('./EmailService');
+const redis = require('../config/redis');
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 
 class AuthService {
@@ -77,6 +80,142 @@ class AuthService {
       roles,
       permissions
     };
+  }
+
+  /**
+   * 用户注册
+   * @param {Object} userData - 用户数据
+   * @param {String} clientIp - 客户端IP
+   * @returns {Object} 注册结果
+   */
+  async register(userData, clientIp) {
+    const { username, email, password, real_name, phone } = userData;
+
+    // 检查用户名是否已存在
+    const existingUserByUsername = await userRepository.findByUsername(username);
+    if (existingUserByUsername) {
+      throw new Error('用户名已存在');
+    }
+
+    // 检查邮箱是否已存在
+    const existingUserByEmail = await userRepository.findByEmail(email);
+    if (existingUserByEmail) {
+      throw new Error('邮箱已存在');
+    }
+
+    // 生成验证码
+    const verificationCode = this.generateVerificationCode();
+    
+    // 将用户数据和验证码存储到Redis（10分钟过期）
+    const tempUserKey = `temp_user:${email}`;
+    const tempUserData = {
+      username,
+      email,
+      password,
+      real_name,
+      phone,
+      verificationCode,
+      clientIp,
+      createdAt: new Date().toISOString()
+    };
+    
+    await redis.setex(tempUserKey, 600, JSON.stringify(tempUserData)); // 10分钟过期
+
+    // 发送验证邮件
+    const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?email=${encodeURIComponent(email)}&code=${verificationCode}`;
+    await emailService.sendVerificationEmail(email, username, verificationCode, verificationUrl);
+
+    return {
+      message: '注册信息已提交，请查收验证邮件',
+      email: email
+    };
+  }
+
+  /**
+   * 验证邮箱
+   * @param {String} email - 邮箱
+   * @param {String} code - 验证码
+   * @returns {Object} 验证结果
+   */
+  async verifyEmail(email, code) {
+    const tempUserKey = `temp_user:${email}`;
+    const tempUserDataStr = await redis.get(tempUserKey);
+    
+    if (!tempUserDataStr) {
+      throw new Error('验证码已过期或无效');
+    }
+
+    const tempUserData = JSON.parse(tempUserDataStr);
+    
+    if (tempUserData.verificationCode !== code) {
+      throw new Error('验证码错误');
+    }
+
+    // 创建用户
+    const user = await userRepository.createUser({
+      username: tempUserData.username,
+      email: tempUserData.email,
+      password: tempUserData.password,
+      real_name: tempUserData.real_name,
+      phone: tempUserData.phone
+    });
+
+    // 删除临时数据
+    await redis.del(tempUserKey);
+
+    // 发送欢迎邮件
+    const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/login`;
+    await emailService.sendWelcomeEmail(email, tempUserData.username, loginUrl);
+
+    // 生成JWT令牌
+    const token = generateToken({
+      id: user.id,
+      username: user.username,
+      email: user.email
+    });
+
+    // 获取用户信息（不包含密码）
+    const userInfo = await userRepository.findUserById(user.id);
+
+    return {
+      user: userInfo,
+      token,
+      message: '邮箱验证成功，注册完成'
+    };
+  }
+
+  /**
+   * 重新发送验证邮件
+   * @param {String} email - 邮箱
+   */
+  async resendVerificationEmail(email) {
+    const tempUserKey = `temp_user:${email}`;
+    const tempUserDataStr = await redis.get(tempUserKey);
+    
+    if (!tempUserDataStr) {
+      throw new Error('注册信息已过期，请重新注册');
+    }
+
+    const tempUserData = JSON.parse(tempUserDataStr);
+    
+    // 生成新的验证码
+    const newVerificationCode = this.generateVerificationCode();
+    tempUserData.verificationCode = newVerificationCode;
+    
+    // 更新Redis中的数据
+    await redis.setex(tempUserKey, 600, JSON.stringify(tempUserData));
+
+    // 发送验证邮件
+    const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?email=${encodeURIComponent(email)}&code=${newVerificationCode}`;
+    await emailService.sendVerificationEmail(email, tempUserData.username, newVerificationCode, verificationUrl);
+  }
+
+  /**
+   * 生成6位数字验证码
+   * @returns {String} 验证码
+   */
+  generateVerificationCode() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
   }
 
   /**

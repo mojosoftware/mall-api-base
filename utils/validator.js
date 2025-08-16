@@ -53,6 +53,25 @@ const userSchemas = {
     password: Joi.string().min(6).max(50).required()
   }),
 
+  register: Joi.object({
+    username: Joi.string().min(3).max(50).required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).max(50).required(),
+    real_name: Joi.string().max(50).optional(),
+    phone: Joi.string()
+      .pattern(/^1[3-9]\d{9}$/)
+      .optional()
+  }),
+
+  verifyEmail: Joi.object({
+    email: Joi.string().email().required(),
+    code: Joi.string().length(6).pattern(/^\d+$/).required()
+  }),
+
+  resendVerification: Joi.object({
+    email: Joi.string().email().required()
+  }),
+
   create: Joi.object({
     username: Joi.string().min(3).max(50).required(),
     email: Joi.string().email().required(),

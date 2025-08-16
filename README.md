@@ -126,6 +126,9 @@ npm start
 
 ### 认证相关
 
+- `POST /api/auth/register` - 用户注册
+- `POST /api/auth/verify-email` - 验证邮箱
+- `POST /api/auth/resend-verification` - 重新发送验证邮件
 - `POST /api/auth/login` - 用户登录
 - `GET /api/auth/me` - 获取当前用户信息
 - `POST /api/auth/change-password` - 修改密码
@@ -160,6 +163,30 @@ npm start
 - `DELETE /api/permissions/:id` - 删除权限
 
 ## 🔧 使用示例
+
+### 用户注册
+
+```bash
+curl -X POST http://localhost:3000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "newuser",
+    "email": "user@example.com",
+    "password": "password123",
+    "real_name": "新用户"
+  }'
+```
+
+### 验证邮箱
+
+```bash
+curl -X POST http://localhost:3000/api/auth/verify-email \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "code": "123456"
+  }'
+```
 
 ### 用户登录
 

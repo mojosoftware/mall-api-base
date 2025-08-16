@@ -39,6 +39,56 @@ class AuthController {
   }
 
   /**
+   * 用户注册
+   * @param {Object} ctx - Koa上下文
+   */
+  async register(ctx) {
+    try {
+      const userData = ctx.request.body;
+      const clientIp =
+        ctx.request.ip ||
+        ctx.request.header['x-forwarded-for'] ||
+        ctx.request.socket.remoteAddress;
+
+      const result = await authService.register(userData, clientIp);
+      Response.success(ctx, result, '注册信息已提交');
+    } catch (error) {
+      logger.error('注册失败:', error);
+      Response.error(ctx, error.message || '注册失败', -1, 400);
+    }
+  }
+
+  /**
+   * 验证邮箱
+   * @param {Object} ctx - Koa上下文
+   */
+  async verifyEmail(ctx) {
+    try {
+      const { email, code } = ctx.request.body;
+      const result = await authService.verifyEmail(email, code);
+      Response.success(ctx, result, '邮箱验证成功');
+    } catch (error) {
+      logger.error('邮箱验证失败:', error);
+      Response.error(ctx, error.message || '邮箱验证失败', -1, 400);
+    }
+  }
+
+  /**
+   * 重新发送验证邮件
+   * @param {Object} ctx - Koa上下文
+   */
+  async resendVerificationEmail(ctx) {
+    try {
+      const { email } = ctx.request.body;
+      await authService.resendVerificationEmail(email);
+      Response.success(ctx, null, '验证邮件已重新发送');
+    } catch (error) {
+      logger.error('重新发送验证邮件失败:', error);
+      Response.error(ctx, error.message || '发送失败', -1, 400);
+    }
+  }
+
+  /**
    * 修改密码
    * @param {Object} ctx - Koa上下文
    */

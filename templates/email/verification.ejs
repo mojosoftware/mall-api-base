@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>邮箱验证</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8fafc;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 30px;
+            text-align: center;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .welcome {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .welcome h2 {
+            font-size: 24px;
+            color: #2d3748;
+            margin-bottom: 12px;
+        }
+        
+        .welcome p {
+            font-size: 16px;
+            color: #718096;
+            line-height: 1.5;
+        }
+        
+        .verification-box {
+            background-color: #f7fafc;
+            border: 2px dashed #e2e8f0;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .verification-code {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+            letter-spacing: 4px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .verification-text {
+            font-size: 14px;
+            color: #718096;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: transform 0.2s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .info-section {
+            background-color: #edf2f7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+        
+        .info-section h3 {
+            font-size: 18px;
+            color: #2d3748;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .info-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .info-section li {
+            padding: 6px 0;
+            color: #4a5568;
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .info-section li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #48bb78;
+            font-weight: bold;
+        }
+        
+        .footer {
+            background-color: #f7fafc;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .footer p {
+            font-size: 14px;
+            color: #718096;
+            margin-bottom: 8px;
+        }
+        
+        .footer .company {
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e2e8f0, transparent);
+            margin: 30px 0;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+            
+            .header, .content, .footer {
+                padding: 30px 20px;
+            }
+            
+            .verification-code {
+                font-size: 28px;
+                letter-spacing: 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉 欢迎加入</h1>
+            <p>感谢您选择我们的服务</p>
+        </div>
+        
+        <div class="content">
+            <div class="welcome">
+                <h2>您好，<%= username %>！</h2>
+                <p>为了确保账户安全，请验证您的邮箱地址</p>
+            </div>
+            
+            <div class="verification-box">
+                <div class="verification-text">您的验证码是：</div>
+                <div class="verification-code"><%= verificationCode %></div>
+                <div class="verification-text">验证码有效期为 <strong>10分钟</strong></div>
+                
+                <% if (verificationUrl) { %>
+                <a href="<%= verificationUrl %>" class="btn">立即验证</a>
+                <% } %>
+            </div>
+            
+            <div class="info-section">
+                <h3>🔒 安全提示</h3>
+                <ul>
+                    <li>请勿将验证码分享给他人</li>
+                    <li>验证码仅用于本次邮箱验证</li>
+                    <li>如非本人操作，请忽略此邮件</li>
+                    <li>验证码10分钟后自动失效</li>
+                </ul>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div style="text-align: center; color: #718096; font-size: 14px;">
+                <p>如果您无法点击按钮，请复制以下链接到浏览器：</p>
+                <% if (verificationUrl) { %>
+                <p style="word-break: break-all; color: #667eea; margin-top: 10px;">
+                    <%= verificationUrl %>
+                </p>
+                <% } %>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p class="company">商城管理系统</p>
+            <p>此邮件由系统自动发送，请勿回复</p>
+            <p style="margin-top: 15px; font-size: 12px; color: #a0aec0;">
+                © <%= new Date().getFullYear() %> 版权所有
+            </p>
+        </div>
+    </div>
+</body>
+</html>

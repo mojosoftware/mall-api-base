@@ -6,6 +6,30 @@ const { createRateLimiter, rateLimitConfigs } = require('../middleware/rateLimit
 
 const router = new Router({ prefix: '/api/auth' });
 
+// 用户注册
+router.post(
+  '/register',
+  createRateLimiter(rateLimitConfigs.strict),
+  validateSchema(userSchemas.register),
+  authController.register
+);
+
+// 验证邮箱
+router.post(
+  '/verify-email',
+  createRateLimiter(rateLimitConfigs.strict),
+  validateSchema(userSchemas.verifyEmail),
+  authController.verifyEmail
+);
+
+// 重新发送验证邮件
+router.post(
+  '/resend-verification',
+  createRateLimiter(rateLimitConfigs.strict),
+  validateSchema(userSchemas.resendVerification),
+  authController.resendVerificationEmail
+);
+
 // 用户登录
 router.post(
   '/login',
