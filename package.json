@@ -11,8 +11,10 @@
   "keywords": [
     "koa2",
     "mysql",
+    "winston",
+    "jwt",
     "rbac",
-    "admin",
+    "mall",
     "api"
   ],
   "author": "",
@@ -20,16 +22,20 @@
   "dependencies": {
     "@koa/router": "^14.0.0",
     "bcryptjs": "^2.4.3",
+    "dotenv": "^17.2.1",
     "joi": "^17.11.0",
     "jsonwebtoken": "^9.0.2",
     "koa": "^2.14.2",
     "koa-bodyparser": "^4.4.1",
     "koa-cors": "^0.0.16",
+    "koa-helmet": "^8.0.1",
     "koa-json": "^2.0.2",
-    "koa-logger": "^3.2.1",
-    "mysql2": "^3.6.3"
+    "mysql2": "^3.6.3",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.1",
+    "prettier": "^3.6.2"
   }
 }

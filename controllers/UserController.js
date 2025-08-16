@@ -1,6 +1,7 @@
 const UserRepository = require('../repositories/UserRepository');
 const RoleRepository = require('../repositories/RoleRepository');
 const Response = require('../utils/response');
+const logger = require('../utils/logger');
 
 class UserController {
   constructor() {
@@ -14,7 +15,13 @@ class UserController {
    */
   async getUsers(ctx) {
     try {
-      const { page = 1, pageSize = 10, username, email, status } = ctx.request.query;
+      const {
+        page = 1,
+        pageSize = 10,
+        username,
+        email,
+        status
+      } = ctx.request.query;
 
       const filters = {};
       if (username) filters.username = username;
@@ -27,10 +34,16 @@ class UserController {
         filters
       );
 
-      Response.page(ctx, result.list, result.total, page, pageSize, '获取用户列表成功');
-
+      Response.page(
+        ctx,
+        result.list,
+        result.total,
+        page,
+        pageSize,
+        '获取用户列表成功'
+      );
     } catch (error) {
-      console.error('获取用户列表失败:', error);
+      logger.error('获取用户列表失败:', error);
       Response.error(ctx, '获取用户列表失败', -1, 500);
     }
   }
@@ -52,9 +65,8 @@ class UserController {
       const roles = await this.userRepository.getUserRoles(id);
 
       Response.success(ctx, { user, roles }, '获取用户详情成功');
-
     } catch (error) {
-      console.error('获取用户详情失败:', error);
+      logger.error('获取用户详情失败:', error);
       Response.error(ctx, '获取用户详情失败', -1, 500);
     }
   }
@@ -68,22 +80,25 @@ class UserController {
       const userData = ctx.request.body;
 
       // 检查用户名是否已存在
-      const existingUserByUsername = await this.userRepository.findByUsername(userData.username);
+      const existingUserByUsername = await this.userRepository.findByUsername(
+        userData.username
+      );
       if (existingUserByUsername) {
         return Response.error(ctx, '用户名已存在', -1, 400);
       }
 
       // 检查邮箱是否已存在
-      const existingUserByEmail = await this.userRepository.findByEmail(userData.email);
+      const existingUserByEmail = await this.userRepository.findByEmail(
+        userData.email
+      );
       if (existingUserByEmail) {
         return Response.error(ctx, '邮箱已存在', -1, 400);
       }
 
       const user = await this.userRepository.create(userData);
       Response.success(ctx, user, '创建用户成功');
-
     } catch (error) {
-      console.error('创建用户失败:', error);
+      logger.error('创建用户失败:', error);
       Response.error(ctx, '创建用户失败', -1, 500);
     }
   }
@@ -105,7 +120,9 @@ class UserController {
 
       // 如果更新邮箱，检查是否已存在
       if (updateData.email && updateData.email !== existingUser.email) {
-        const existingUserByEmail = await this.userRepository.findByEmail(updateData.email);
+        const existingUserByEmail = await this.userRepository.findByEmail(
+          updateData.email
+        );
         if (existingUserByEmail) {
           return Response.error(ctx, '邮箱已存在', -1, 400);
         }
@@ -113,9 +130,8 @@ class UserController {
 
       const user = await this.userRepository.update(id, updateData);
       Response.success(ctx, user, '更新用户成功');
-
     } catch (error) {
-      console.error('更新用户失败:', error);
+      logger.error('更新用户失败:', error);
       Response.error(ctx, '更新用户失败', -1, 500);
     }
   }
@@ -146,9 +162,8 @@ class UserController {
       } else {
         Response.error(ctx, '删除用户失败', -1, 400);
       }
-
     } catch (error) {
-      console.error('删除用户失败:', error);
+      logger.error('删除用户失败:', error);
       Response.error(ctx, '删除用户失败', -1, 500);
     }
   }
@@ -178,9 +193,8 @@ class UserController {
 
       await this.userRepository.assignRoles(id, role_ids);
       Response.success(ctx, null, '分配角色成功');
-
     } catch (error) {
-      console.error('分配角色失败:', error);
+      logger.error('分配角色失败:', error);
       Response.error(ctx, '分配角色失败', -1, 500);
     }
   }
@@ -203,15 +217,14 @@ class UserController {
       // 更新密码
       const bcrypt = require('bcryptjs');
       const hashedPassword = await bcrypt.hash(new_password, 10);
-      
+
       await this.userRepository.update(id, {
         password: hashedPassword
       });
 
       Response.success(ctx, null, '重置密码成功');
-
     } catch (error) {
-      console.error('重置密码失败:', error);
+      logger.error('重置密码失败:', error);
       Response.error(ctx, '重置密码失败', -1, 500);
     }
   }

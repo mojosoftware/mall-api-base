@@ -2,30 +2,47 @@ const Koa = require('koa');
 const bodyParser = require('koa-bodyparser');
 const cors = require('koa-cors');
 const json = require('koa-json');
-const logger = require('koa-logger');
+const helmet = require('koa-helmet');
+const logger = require('./utils/logger');
+const { promisePool } = require('./config/database');
 const routes = require('./routes');
 const errorHandler = require('./middleware/errorHandler');
+const Response = require('./utils/response');
 
 const app = new Koa();
 
 // 全局错误处理
 app.use(errorHandler);
 
-// 中间件
-app.use(logger());
-app.use(cors({
-  origin: '*',
-  credentials: true,
-  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With']
-}));
+// 安全中间件
+app.use(helmet());
+
+// CORS配置
+app.use(
+  cors({
+    origin: '*',
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization']
+  })
+);
+
 app.use(json({ pretty: false, param: 'pretty' }));
-app.use(bodyParser({
-  enableTypes: ['json', 'form'],
-  jsonLimit: '10mb',
-  formLimit: '10mb',
-  textLimit: '10mb'
-}));
+
+// 请求体解析
+app.use(
+  bodyParser({
+    jsonLimit: '10mb',
+    formLimit: '10mb'
+  })
+);
+
+// 请求日志中间件
+app.use(async (ctx, next) => {
+  const start = Date.now();
+  await next();
+  const ms = Date.now() - start;
+  logger.info(`${ctx.method} ${ctx.url} - ${ctx.status} - ${ms}ms`);
+});
 
 // 注册路由
 app.use(routes.routes());
@@ -33,22 +50,27 @@ app.use(routes.allowedMethods());
 
 // 404处理
 app.use(async (ctx) => {
-  ctx.status = 404;
-  ctx.body = {
-    code: -1,
-    message: '接口不存在',
-    data: null,
-    timestamp: new Date().toISOString()
-  };
+  Response.error(ctx, '接口不存在', -1, 404);
 });
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log(`🚀 服务器启动成功！`);
-  console.log(`📍 服务地址: http://localhost:${PORT}`);
-  console.log(`📖 API文档: http://localhost:${PORT}/api/health`);
-  console.log(`🔑 默认管理员账号: admin / password`);
-});
+// 启动前测试数据库连接
+promisePool
+  .getConnection()
+  .then((conn) => {
+    conn.release();
+    console.log('✅ 数据库连接成功');
+    app.listen(PORT, () => {
+      console.log(`🚀 服务器启动成功！`);
+      console.log(`📍 服务地址: http://localhost:${PORT}`);
+      console.log(`📖 API文档: http://localhost:${PORT}/api`);
+      console.log(`🔑 默认管理员账号: admin / password`);
+    });
+  })
+  .catch((err) => {
+    logger.error('❌ 数据库连接失败:', err.message);
+    process.exit(1);
+  });
 
 module.exports = app;

@@ -1,6 +1,7 @@
 const RoleRepository = require('../repositories/RoleRepository');
 const PermissionRepository = require('../repositories/PermissionRepository');
 const Response = require('../utils/response');
+const logger = require('../utils/logger');
 
 class RoleController {
   constructor() {
@@ -29,15 +30,21 @@ class RoleController {
           filters
         );
 
-        Response.page(ctx, result.list, result.total, page, pageSize, '获取角色列表成功');
+        Response.page(
+          ctx,
+          result.list,
+          result.total,
+          page,
+          pageSize,
+          '获取角色列表成功'
+        );
       } else {
         // 获取所有启用的角色
         const roles = await this.roleRepository.findAllEnabled();
         Response.success(ctx, roles, '获取角色列表成功');
       }
-
     } catch (error) {
-      console.error('获取角色列表失败:', error);
+      logger.error('获取角色列表失败:', error);
       Response.error(ctx, '获取角色列表失败', -1, 500);
     }
   }
@@ -59,9 +66,8 @@ class RoleController {
       const permissions = await this.roleRepository.getRolePermissions(id);
 
       Response.success(ctx, { role, permissions }, '获取角色详情成功');
-
     } catch (error) {
-      console.error('获取角色详情失败:', error);
+      logger.error('获取角色详情失败:', error);
       Response.error(ctx, '获取角色详情失败', -1, 500);
     }
   }
@@ -82,9 +88,8 @@ class RoleController {
 
       const role = await this.roleRepository.create(roleData);
       Response.success(ctx, role, '创建角色成功');
-
     } catch (error) {
-      console.error('创建角色失败:', error);
+      logger.error('创建角色失败:', error);
       Response.error(ctx, '创建角色失败', -1, 500);
     }
   }
@@ -106,9 +111,8 @@ class RoleController {
 
       const role = await this.roleRepository.update(id, updateData);
       Response.success(ctx, role, '更新角色成功');
-
     } catch (error) {
-      console.error('更新角色失败:', error);
+      logger.error('更新角色失败:', error);
       Response.error(ctx, '更新角色失败', -1, 500);
     }
   }
@@ -139,9 +143,8 @@ class RoleController {
       } else {
         Response.error(ctx, '删除角色失败', -1, 400);
       }
-
     } catch (error) {
-      console.error('删除角色失败:', error);
+      logger.error('删除角色失败:', error);
       Response.error(ctx, '删除角色失败', -1, 500);
     }
   }
@@ -163,7 +166,8 @@ class RoleController {
 
       // 验证权限是否都存在
       for (const permissionId of permission_ids) {
-        const permission = await this.permissionRepository.findById(permissionId);
+        const permission =
+          await this.permissionRepository.findById(permissionId);
         if (!permission) {
           return Response.error(ctx, `权限ID ${permissionId} 不存在`, -1, 400);
         }
@@ -171,9 +175,8 @@ class RoleController {
 
       await this.roleRepository.assignPermissions(id, permission_ids);
       Response.success(ctx, null, '分配权限成功');
-
     } catch (error) {
-      console.error('分配权限失败:', error);
+      logger.error('分配权限失败:', error);
       Response.error(ctx, '分配权限失败', -1, 500);
     }
   }

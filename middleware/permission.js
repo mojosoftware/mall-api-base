@@ -1,5 +1,6 @@
-const UserRepository = require("../repositories/UserRepository");
-const Response = require("../utils/response");
+const UserRepository = require('../repositories/UserRepository');
+const Response = require('../utils/response');
+const logger = require('../utils/logger');
 
 /**
  * 权限验证中间件
@@ -12,7 +13,7 @@ function requirePermission(requiredPermissions) {
       const userId = ctx.state.userId;
 
       if (!userId) {
-        return Response.error(ctx, "用户未认证", -1, 401);
+        return Response.error(ctx, '用户未认证', -1, 401);
       }
 
       // 标准化权限参数
@@ -33,13 +34,13 @@ function requirePermission(requiredPermissions) {
       );
 
       if (!hasPermission) {
-        return Response.error(ctx, "权限不足", -1, 403);
+        return Response.error(ctx, '权限不足', -1, 403);
       }
 
       await next();
     } catch (error) {
-      console.error("权限验证失败:", error);
-      return Response.error(ctx, "权限验证失败", -1, 500);
+      logger.error('权限验证失败:', error);
+      return Response.error(ctx, '权限验证失败', -1, 500);
     }
   };
 }
@@ -52,22 +53,22 @@ async function requireSuperAdmin(ctx, next) {
     const userId = ctx.state.userId;
 
     if (!userId) {
-      return Response.error(ctx, "用户未认证", -1, 401);
+      return Response.error(ctx, '用户未认证', -1, 401);
     }
 
     const userRepository = new UserRepository();
     const userRoles = await userRepository.getUserRoles(userId);
 
-    const isSuperAdmin = userRoles.some((role) => role.code === "super_admin");
+    const isSuperAdmin = userRoles.some((role) => role.code === 'super_admin');
 
     if (!isSuperAdmin) {
-      return Response.error(ctx, "需要超级管理员权限", -1, 403);
+      return Response.error(ctx, '需要超级管理员权限', -1, 403);
     }
 
     await next();
   } catch (error) {
-    console.error("超级管理员权限验证失败:", error);
-    return Response.error(ctx, "权限验证失败", -1, 500);
+    logger.error('超级管理员权限验证失败:', error);
+    return Response.error(ctx, '权限验证失败', -1, 500);
   }
 }
 
@@ -82,7 +83,7 @@ function requireRole(requiredRoles) {
       const userId = ctx.state.userId;
 
       if (!userId) {
-        return Response.error(ctx, "用户未认证", -1, 401);
+        return Response.error(ctx, '用户未认证', -1, 401);
       }
 
       const roles = Array.isArray(requiredRoles)
@@ -97,13 +98,13 @@ function requireRole(requiredRoles) {
       const hasRole = roles.some((role) => userRoleCodes.includes(role));
 
       if (!hasRole) {
-        return Response.error(ctx, "角色权限不足", -1, 403);
+        return Response.error(ctx, '角色权限不足', -1, 403);
       }
 
       await next();
     } catch (error) {
-      console.error("角色验证失败:", error);
-      return Response.error(ctx, "角色验证失败", -1, 500);
+      logger.error('角色验证失败:', error);
+      return Response.error(ctx, '角色验证失败', -1, 500);
     }
   };
 }
@@ -111,5 +112,5 @@ function requireRole(requiredRoles) {
 module.exports = {
   requirePermission,
   requireSuperAdmin,
-  requireRole,
+  requireRole
 };

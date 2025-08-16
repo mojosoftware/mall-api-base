@@ -45,7 +45,14 @@ class Response {
    * @param {Number} pageSize - 每页大小
    * @param {String} message - 响应消息
    */
-  static page(ctx, list = [], total = 0, page = 1, pageSize = 10, message = '查询成功') {
+  static page(
+    ctx,
+    list = [],
+    total = 0,
+    page = 1,
+    pageSize = 10,
+    message = '查询成功'
+  ) {
     ctx.status = 200;
     ctx.body = {
       code: 0,
