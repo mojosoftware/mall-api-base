@@ -20,6 +20,11 @@ app.js                    # 应用入口文件
 ├── config/               # 配置文件
 │   ├── database.js       # 数据库配置
 │   └── jwt.js           # JWT配置
+├── services/             # 业务逻辑层
+│   ├── AuthService.js    # 认证业务逻辑
+│   ├── UserService.js    # 用户业务逻辑
+│   ├── RoleService.js    # 角色业务逻辑
+│   └── PermissionService.js # 权限业务逻辑
 ├── controllers/          # 控制器层
 │   ├── AuthController.js # 认证控制器
 │   ├── UserController.js # 用户控制器
