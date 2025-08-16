@@ -52,6 +52,20 @@ app.use(async (ctx, next) => {
 app.use(routes.routes());
 app.use(routes.allowedMethods());
 
+// API文档提示
+app.use(async (ctx, next) => {
+  if (ctx.path === '/') {
+    ctx.body = {
+      message: '商城管理系统 API',
+      version: '1.0.0',
+      docs: `${ctx.origin}/api-docs`,
+      health: `${ctx.origin}/api/health`
+    };
+    return;
+  }
+  await next();
+});
+
 // 404处理
 app.use(async (ctx) => {
   Response.error(ctx, '接口不存在', -1, 404);

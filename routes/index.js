@@ -4,8 +4,12 @@ const authRoutes = require('./auth');
 const userRoutes = require('./users');
 const roleRoutes = require('./roles');
 const permissionRoutes = require('./permissions');
+const apiDocs = require('../middleware/apiDocs');
 
 const router = new Router();
+
+// API文档中间件
+router.use(apiDocs.middleware());
 
 // 注册路由
 router.use(authRoutes.routes(), authRoutes.allowedMethods());

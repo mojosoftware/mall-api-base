@@ -101,6 +101,23 @@ npm start
 
 服务启动后访问：http://localhost:3000
 
+## 📖 API 文档
+
+系统提供了自动生成的API文档，基于OpenAPI 3.0规范：
+
+- **在线文档**：http://localhost:3000/api-docs
+- **JSON格式**：http://localhost:3000/api-docs.json
+- **健康检查**：http://localhost:3000/api/health
+
+### 文档特性
+
+- 🚀 **自动生成** - 基于路由配置自动生成文档
+- 📱 **响应式设计** - 支持移动端和桌面端
+- 🔍 **接口搜索** - 支持接口名称和标签搜索
+- 🧪 **在线测试** - 直接在文档中测试API接口
+- 🏷️ **标签分类** - 按功能模块分类展示
+- 🔐 **认证支持** - 支持JWT Bearer Token认证
+
 ## 🔐 权限管理
 
 ### RBAC 模型说明
